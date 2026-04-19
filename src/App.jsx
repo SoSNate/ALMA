@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './App.css';
+import { useState, useEffect, useRef, useMemo } from 'react';
 
-// Alma's 100+ Words Database
+// ── Data ──────────────────────────────────────
 const wordsData = [
-    // Basic 50
     { en: "Always", he: "תמיד" }, { en: "Sometimes", he: "לפעמים" }, { en: "Never", he: "אף פעם" },
     { en: "Between", he: "בין" }, { en: "Under", he: "מתחת" }, { en: "Behind", he: "מאחורי" },
     { en: "Happy", he: "שמח" }, { en: "Sad", he: "עצוב" }, { en: "Angry", he: "כועס" },
@@ -21,8 +19,6 @@ const wordsData = [
     { en: "Story", he: "סיפור" }, { en: "Example", he: "דוגמה" }, { en: "Friend", he: "חבר" },
     { en: "Family", he: "משפחה" }, { en: "Work", he: "עבודה" }, { en: "Life", he: "חיים" },
     { en: "Weather", he: "מזג אוויר" }, { en: "Thing", he: "דבר" },
-
-    // 50+ Advanced
     { en: "Unemployed", he: "מובטל" }, { en: "Unhappy", he: "לא שמח" },
     { en: "Misunderstand", he: "להבין לא נכון" }, { en: "Homework", he: "שיעורי בית" },
     { en: "Newspaper", he: "עיתון" }, { en: "Afternoon", he: "אחר הצהריים" },
@@ -38,8 +34,7 @@ const wordsData = [
     { en: "Promise", he: "הבטחה" }, { en: "Quiet", he: "שקט" }, { en: "Secret", he: "סוד" },
     { en: "Strange", he: "מוזר" }, { en: "Surprise", he: "הפתעה" }, { en: "Terrible", he: "נורא" },
     { en: "Together", he: "ביחד" }, { en: "Useful", he: "שימושי" }, { en: "Voice", he: "קול" },
-    { en: "Wonderful", he: "נפלא" },
-    { en: "Challenge", he: "אתגר" }, { en: "Successful", he: "מוצלח" },
+    { en: "Wonderful", he: "נפלא" }, { en: "Challenge", he: "אתגר" }, { en: "Successful", he: "מוצלח" },
     { en: "Discover", he: "לגלות" }, { en: "Prepare", he: "להתכונן" },
     { en: "Improve", he: "לשפר" }, { en: "Focus", he: "להתרכז" },
     { en: "Imagine", he: "לדמיין" }, { en: "Protect", he: "להגן" },
@@ -51,126 +46,95 @@ const wordsData = [
     { en: "Speak", he: "לדבר" }
 ];
 
-const App = () => {
+const storyText = "Maya wanted to improve her English. She knew she had to prepare for a difficult challenge. Her friend gave her helpful advice: Focus on your goals, and be careful not to waste time. Maya tried to imagine her future. She wanted to discover a new career. It wasn't easy, but she was successful because she never stopped trying to understand.";
+
+// ── Helpers ───────────────────────────────────
+const playSound = type => {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        if (type === 'success') {
+            osc.frequency.setValueAtTime(523, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        } else {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(150, ctx.currentTime);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+        }
+        osc.start(); osc.stop(ctx.currentTime + 0.3);
+    } catch (_) {}
+};
+
+const speakText = (text, rate = 0.85) => {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = rate; u.pitch = 1.0;
+    const voices = window.speechSynthesis.getVoices();
+    const pick = voices.find(v => ["Google US English","Microsoft Samantha","Samantha","Microsoft Zira"].some(p => v.name.includes(p)));
+    if (pick) u.voice = pick;
+    window.speechSynthesis.speak(u);
+};
+
+// ── App ───────────────────────────────────────
+export default function App() {
     const [view, setView] = useState('learn');
     const [masteredIndexes, setMasteredIndexes] = useState(() => {
-        try {
-            const saved = localStorage.getItem('alma_mastered_words');
-            return saved ? JSON.parse(saved) : [];
-        } catch {
-            return [];
-        }
+        try { return JSON.parse(localStorage.getItem('alma_mastered_words') || '[]'); }
+        catch { return []; }
     });
-
     const [activeWordIndex, setActiveWordIndex] = useState(() => {
-        const saved = localStorage.getItem('alma_last_active_index');
-        return saved !== null ? parseInt(saved) : 0;
+        const s = localStorage.getItem('alma_last_active_index');
+        return s !== null ? parseInt(s) : 0;
     });
-
     const [step, setStep] = useState(1);
     const [isListening, setIsListening] = useState(false);
     const [feedback, setFeedback] = useState(null);
-    const [options, setOptions] = useState([]);
     const isProcessingRef = useRef(false);
     const currentWord = wordsData[activeWordIndex];
+
+    const options = useMemo(() => {
+        const others = wordsData.filter(w => w.en !== currentWord.en).sort(() => Math.random() - 0.5).slice(0, 3);
+        return [...others, currentWord].sort(() => Math.random() - 0.5);
+    }, [activeWordIndex]);
 
     useEffect(() => {
         localStorage.setItem('alma_mastered_words', JSON.stringify(masteredIndexes));
         localStorage.setItem('alma_last_active_index', activeWordIndex.toString());
     }, [masteredIndexes, activeWordIndex]);
 
-    useEffect(() => {
-        if (view === 'learn' && step === 2 && currentWord) {
-            const others = wordsData.filter(w => w.en !== currentWord.en).sort(() => 0.5 - Math.random()).slice(0, 3);
-            setOptions([...others, currentWord].sort(() => 0.5 - Math.random()));
-        }
-    }, [step, activeWordIndex, view, currentWord]);
-
-    const playSound = (type) => {
-        try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            if (type === 'success') {
-                osc.frequency.setValueAtTime(523, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            } else {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            }
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
-        } catch (e) {}
-    };
-
-    const speak = (text) => {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'en-US';
-        u.rate = 0.85;
-        u.pitch = 1.0;
-        const voices = window.speechSynthesis.getVoices();
-        const priorityVoices = ["Google US English", "Microsoft Samantha", "Samantha"];
-        let voice = voices.find(v => priorityVoices.some(p => v.name.includes(p)));
-        if (!voice) voice = voices.find(v => v.lang.startsWith('en'));
-        if (voice) u.voice = voice;
-        window.speechSynthesis.speak(u);
-    };
-
     const handleSpeech = () => {
         if (isListening) return;
         const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!Recognition) return alert("זיהוי קולי לא נתמך");
-
+        if (!Recognition) return alert("הדפדפן לא תומך בזיהוי קולי.");
         const rec = new Recognition();
-        rec.lang = 'en-US';
-        rec.continuous = false;
-        rec.interimResults = false;
-        rec.maxAlternatives = 1;
+        rec.lang = 'en-US'; rec.continuous = false; rec.interimResults = false; rec.maxAlternatives = 1;
         isProcessingRef.current = false;
-
         rec.onstart = () => setIsListening(true);
-
-        rec.onend = () => {
-            setIsListening(false);
-            isProcessingRef.current = false;
-        };
-
-        rec.onerror = (e) => {
-            setIsListening(false);
-            isProcessingRef.current = false;
-            if (e.error === 'no-speech') {
-                setFeedback({ type: 'error', message: 'לא שמעתי כלום, נסי שוב 🎤' });
-            } else if (e.error === 'not-allowed') {
-                setFeedback({ type: 'error', message: 'נא לאשר גישה למיקרופון בדפדפן.' });
-            } else {
-                setFeedback({ type: 'error', message: 'שגיאת מיקרופון, נסי שוב.' });
-            }
+        rec.onend   = () => { setIsListening(false); isProcessingRef.current = false; };
+        rec.onerror = e => {
+            setIsListening(false); isProcessingRef.current = false;
+            const msgs = { 'no-speech': 'לא שמעתי כלום, נסי שוב 🎤', 'not-allowed': 'נא לאשר גישה למיקרופון.' };
+            setFeedback({ type: 'error', message: msgs[e.error] || 'שגיאת מיקרופון, נסי שוב.' });
             setTimeout(() => setFeedback(null), 2500);
         };
-
-        rec.onresult = (e) => {
+        rec.onresult = e => {
             if (isProcessingRef.current) return;
-            const transcript = e.results[0][0].transcript.toLowerCase();
+            const transcript = e.results[0][0].transcript.toLowerCase().trim();
             const target = currentWord.en.toLowerCase().replace(/^to\s+/, "");
-
             if (transcript.includes(target)) {
                 isProcessingRef.current = true;
-                playSound('success');
                 setFeedback({ type: 'success', message: `מעולה! זיהיתי "${transcript}"` });
-
+                playSound('success');
                 setMasteredIndexes(prev => {
                     const next = prev.includes(activeWordIndex) ? prev : [...prev, activeWordIndex];
                     setTimeout(() => {
-                        setActiveWordIndex(prev => (prev + 1) % wordsData.length);
-                        setStep(1);
-                        setFeedback(null);
-                        isProcessingRef.current = false;
+                        setActiveWordIndex(i => (i + 1) % wordsData.length);
+                        setStep(1); setFeedback(null); isProcessingRef.current = false;
                     }, 1500);
                     return next;
                 });
@@ -179,70 +143,69 @@ const App = () => {
                 setFeedback({ type: 'error', message: `שמעתי "${transcript}", נסי שוב.` });
             }
         };
-
-        try {
-            rec.start();
-        } catch (e) {
-            setIsListening(false);
-            setFeedback({ type: 'error', message: 'לא ניתן להפעיל מיקרופון, נסי שוב.' });
-            setTimeout(() => setFeedback(null), 2500);
-        }
+        try { rec.start(); } catch (_) { setIsListening(false); }
     };
 
-    const checkTranslation = (he) => {
-        if (he === currentWord.he) {
-            playSound('success');
-            setStep(3);
-        } else {
-            playSound('error');
-            setFeedback({ type: 'error', message: "טעות, נסי שוב." });
-            setTimeout(() => setFeedback(null), 1500);
-        }
+    const checkTranslation = he => {
+        if (he === currentWord.he) { playSound('success'); setStep(3); }
+        else { playSound('error'); setFeedback({ type: 'error', message: 'טעות, נסי שוב.' }); setTimeout(() => setFeedback(null), 1500); }
     };
 
     const resetProgress = () => {
-        if (confirm("האם לאפס את כל ההתקדמות?")) {
-            setMasteredIndexes([]);
-            setActiveWordIndex(0);
-            localStorage.clear();
+        if (confirm("לאפס את כל ההתקדמות?")) {
+            setMasteredIndexes([]); setActiveWordIndex(0);
+            localStorage.removeItem('alma_mastered_words'); localStorage.removeItem('alma_last_active_index');
+            setView('learn'); setStep(1);
         }
     };
 
+    const NavBtn = ({ icon, label, id }) => (
+        <button onClick={() => setView(id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all shadow-sm border border-transparent
+                ${view === id ? 'bg-pink-500 text-white shadow-md scale-105 border-pink-600' : 'bg-white text-slate-700 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200'}`}>
+            <span>{icon}</span><span>{label}</span>
+        </button>
+    );
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 p-4 md:p-8" dir="rtl">
-            <div className="max-w-4xl mx-auto">
-                <header className="text-center mb-10">
-                    <div className="flex justify-between items-center mb-8">
-                        <button onClick={resetProgress} className="text-xs bg-white/60 hover:bg-white backdrop-blur-sm px-4 py-2 rounded-full text-slate-500 font-semibold border border-white/40 shadow-sm transition-all">איפוס 🔄</button>
-                        <div className="flex flex-col items-center">
-                            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 bg-clip-text text-transparent drop-shadow-sm">עלמה</h1>
-                            <p className="text-slate-500 text-sm mt-1 font-light">עולם לימוד אנגלית מוסיקלי וכייף</p>
-                        </div>
-                        <div className="w-16"></div>
+        <div className="min-h-screen bg-rose-50 text-slate-800 p-4 md:p-8 font-sans" dir="rtl">
+            <div className="max-w-5xl mx-auto">
+
+                {/* Header */}
+                <header className="text-center mb-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <button onClick={resetProgress} className="text-xs bg-white hover:bg-pink-100 text-pink-600 px-3 py-1 rounded-full font-bold shadow-sm">איפוס 🔄</button>
+                        <h1 className="text-4xl md:text-5xl font-black text-pink-600 drop-shadow-sm">העולם של עלמה 🌟</h1>
+                        <div className="w-16" />
                     </div>
-                    <div className="flex flex-wrap justify-center gap-2 bg-white/40 backdrop-blur-md p-2 rounded-2xl border border-white/60 shadow-sm">
-                        <button onClick={() => setView('learn')} className={`px-6 py-2.5 rounded-xl font-semibold transition-all backdrop-blur-sm ${view === 'learn' ? 'bg-gradient-to-r from-rose-400 to-pink-500 text-white shadow-md scale-105' : 'bg-white/40 text-slate-700 hover:bg-white/60 border border-white/40'}`}>📖 למידה</button>
-                        <button onClick={() => setView('library')} className={`px-6 py-2.5 rounded-xl font-semibold transition-all backdrop-blur-sm ${view === 'library' ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-md scale-105' : 'bg-white/40 text-slate-700 hover:bg-white/60 border border-white/40'}`}>📚 ספריה</button>
-                        <button onClick={() => setView('stories')} className={`px-6 py-2.5 rounded-xl font-semibold transition-all backdrop-blur-sm ${view === 'stories' ? 'bg-gradient-to-r from-purple-400 to-pink-500 text-white shadow-md scale-105' : 'bg-white/40 text-slate-700 hover:bg-white/60 border border-white/40'}`}>✨ סיפורים</button>
+                    <div className="flex flex-wrap justify-center gap-2">
+                        <NavBtn icon="🎓" label="למידה"   id="learn" />
+                        <NavBtn icon="📖" label="ספריה"   id="library" />
+                        <NavBtn icon="📚" label="סיפור"   id="story" />
                     </div>
                 </header>
 
-                {view === 'learn' && currentWord && (
-                    <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 md:p-12 shadow-lg border border-white/60 text-center relative min-h-[500px] flex flex-col justify-center transition-all">
+                {/* Learn */}
+                {view === 'learn' && (
+                    <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border-t-8 border-pink-400 text-center relative min-h-[450px] flex flex-col justify-center transition-all">
                         {feedback && (
-                            <div className={`absolute top-0 left-0 w-full p-3 rounded-t-[2.5rem] text-white font-semibold backdrop-blur-sm ${feedback.type === 'success' ? 'bg-gradient-to-r from-emerald-400 to-teal-500' : 'bg-gradient-to-r from-rose-400 to-pink-500'}`}>
+                            <div className={`absolute top-0 left-0 w-full p-3 rounded-t-[3rem] text-white font-bold ${feedback.type === 'success' ? 'bg-fuchsia-500' : 'bg-rose-500'}`}>
                                 {feedback.message}
                             </div>
                         )}
-                        <h2 className="text-7xl font-black bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent mb-10" dir="ltr">{currentWord.en}</h2>
+                        <h2 className="text-6xl font-black text-pink-900 mb-8" dir="ltr">{currentWord.en}</h2>
 
                         {step === 1 && (
-                            <div className="space-y-8">
-                                <button onClick={() => speak(currentWord.en)} className="w-28 h-28 bg-gradient-to-br from-rose-400 to-pink-500 text-white rounded-full flex items-center justify-center mx-auto shadow-lg hover:shadow-2xl hover:scale-110 active:scale-95 transition-all border-4 border-white/40">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+                            <div className="space-y-6">
+                                <button onClick={() => speakText(currentWord.en)}
+                                    className="w-24 h-24 bg-pink-500 text-white rounded-full flex items-center justify-center mx-auto shadow-lg hover:scale-110 active:scale-95 transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                    </svg>
                                 </button>
-                                <button onClick={() => setStep(2)} className="mt-8 px-12 py-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-xl rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all border-2 border-white/40 w-full max-w-sm mx-auto">
-                                    אני מכירה, בואו נתרגם! ✨
+                                <button onClick={() => setStep(2)}
+                                    className="mt-8 px-10 py-5 bg-white border-4 border-pink-400 text-pink-600 font-black text-2xl rounded-2xl shadow-xl hover:bg-pink-500 hover:text-white transition-all transform hover:scale-105 block mx-auto w-full max-w-sm">
+                                    אני מכירה, נעבור לתרגום ✨
                                 </button>
                             </div>
                         )}
@@ -250,7 +213,8 @@ const App = () => {
                         {step === 2 && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {options.map((opt, i) => (
-                                    <button key={i} onClick={() => checkTranslation(opt.he)} className="p-6 bg-gradient-to-br from-purple-100 to-pink-100 border-2 border-purple-300/50 rounded-2xl font-bold text-lg text-slate-700 hover:bg-gradient-to-br hover:from-purple-400 hover:to-pink-400 hover:text-white hover:border-purple-400 transition-all shadow-sm hover:shadow-md">
+                                    <button key={i} onClick={() => checkTranslation(opt.he)}
+                                        className="p-6 bg-pink-50 border-2 border-pink-200 rounded-2xl font-bold text-xl text-pink-900 hover:bg-pink-500 hover:text-white transition-all shadow-sm">
                                         {opt.he}
                                     </button>
                                 ))}
@@ -258,59 +222,70 @@ const App = () => {
                         )}
 
                         {step === 3 && (
-                            <div className="space-y-8">
-                                <p className="text-slate-600 font-semibold text-lg">עכשיו תורך! אמרי את המילה באנגלית:</p>
-                                <button onClick={handleSpeech} className={`w-32 h-32 rounded-full flex items-center justify-center mx-auto shadow-xl transition-all border-4 border-white/40 ${isListening ? 'bg-gradient-to-br from-amber-400 to-orange-500 scale-110 animate-pulse' : 'bg-gradient-to-br from-slate-600 to-slate-800 hover:from-slate-700 hover:to-slate-900'}`}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                            <div className="space-y-6">
+                                <p className="text-slate-500 font-bold text-lg">עכשיו תורך! אמרי את המילה באנגלית:</p>
+                                <button onClick={handleSpeech}
+                                    className={`w-32 h-32 rounded-full flex items-center justify-center mx-auto shadow-2xl transition-all relative ${isListening ? 'bg-rose-400 scale-110' : 'bg-pink-500 hover:bg-pink-600'}`}>
+                                    {isListening && <span className="absolute inset-0 rounded-full border-4 border-rose-300 animate-ping" />}
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="white">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                                    </svg>
                                 </button>
-                                <p className="font-semibold text-slate-500">{isListening ? "💬 אני מקשיב..." : "🎤 לחצי על הכפתור"}</p>
+                                <p className="font-bold text-slate-400">{isListening ? "💬 אני מקשיב..." : "לחצי על המיקרופון"}</p>
                             </div>
                         )}
 
-                        <div className="w-full bg-slate-200/50 h-3 rounded-full mt-12 overflow-hidden">
-                            <div className="bg-gradient-to-r from-rose-400 to-purple-500 h-full transition-all duration-700" style={{width: `${(masteredIndexes.length / wordsData.length) * 100}%`}}></div>
+                        <div className="w-full bg-pink-100 h-4 rounded-full mt-10 overflow-hidden">
+                            <div className="bg-pink-500 h-full transition-all duration-700" style={{ width: `${(masteredIndexes.length / wordsData.length) * 100}%` }} />
                         </div>
-                        <p className="text-slate-500 text-sm mt-3 font-medium">{masteredIndexes.length} מתוך {wordsData.length} מילים ✓</p>
+                        <p className="text-slate-400 text-sm mt-2 font-bold">{masteredIndexes.length} מתוך {wordsData.length} מילים נלמדו</p>
                     </div>
                 )}
 
+                {/* Library */}
                 {view === 'library' && (
-                    <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 shadow-lg border border-white/60">
-                        <h2 className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-8 text-center">ספריית המילים 📚</h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 max-h-[65vh] overflow-y-auto pr-2">
-                            {wordsData.map((w, i) => (
-                                <div key={i} onClick={() => { setActiveWordIndex(i); setStep(1); setView('learn'); }} className={`p-4 rounded-xl border-2 cursor-pointer transition-all transform hover:scale-105 ${masteredIndexes.includes(i) ? 'bg-gradient-to-br from-emerald-100 to-teal-100 border-emerald-300/60 shadow-md' : 'bg-gradient-to-br from-slate-50 to-blue-50 border-slate-200/60 hover:border-purple-300'}`}>
-                                    <p className="font-bold text-sm text-center text-slate-800" dir="ltr">{w.en}</p>
-                                    <p className="text-xs text-slate-600 text-center mt-1">{w.he}</p>
-                                    {masteredIndexes.includes(i) && <span className="text-emerald-500 text-center block mt-2 text-lg">✓</span>}
+                    <div className="bg-white rounded-[3rem] p-8 shadow-xl border-t-8 border-orange-300 transition-all">
+                        <h2 className="text-3xl font-black text-orange-800 mb-6 text-center">הספריה הגדולה ({wordsData.length} מילים)</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[60vh] overflow-y-auto pr-2">
+                            {wordsData.map((w, idx) => (
+                                <div key={idx} onClick={() => { setActiveWordIndex(idx); setStep(1); setView('learn'); }}
+                                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all hover:scale-105
+                                        ${masteredIndexes.includes(idx) ? 'bg-fuchsia-50 border-fuchsia-300' : 'bg-rose-50 border-rose-100 hover:border-pink-400'}`}>
+                                    <p className="font-black text-lg text-center text-slate-800" dir="ltr">{w.en}</p>
+                                    <p className="text-sm text-center text-slate-500 mt-1">{w.he}</p>
+                                    {masteredIndexes.includes(idx) && <span className="text-fuchsia-500 text-center block mt-1 font-bold">✓</span>}
                                 </div>
                             ))}
                         </div>
                     </div>
                 )}
 
-                {view === 'stories' && (
-                    <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 md:p-10 shadow-lg border border-white/60">
-                        <h2 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-6 text-center">סיפור - The Big Challenge ✨</h2>
-                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-2xl border border-purple-200/50 mb-8">
-                            <p className="text-slate-700 mb-4 text-lg leading-relaxed" dir="ltr">
-                                <span className="font-bold text-purple-700">Maya</span> wanted to <span className="font-semibold text-purple-600">improve</span> her English. She knew she had to <span className="font-semibold text-purple-600">prepare</span> for a <span className="font-semibold text-rose-600">difficult challenge</span>.
+                {/* Story */}
+                {view === 'story' && (
+                    <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border-t-8 border-fuchsia-400 transition-all">
+                        <h2 className="text-4xl font-black text-fuchsia-900 mb-6 text-center">The Big Challenge 🧗‍♀️</h2>
+                        <div className="text-xl leading-loose text-slate-800 bg-fuchsia-50 p-6 md:p-8 rounded-2xl border-2 border-fuchsia-200 shadow-inner mb-8" dir="ltr">
+                            <p className="mb-4">
+                                Maya wanted to <strong className="text-fuchsia-600">improve</strong> her English.
+                                She knew she had to <strong className="text-fuchsia-600">prepare</strong> for a <strong className="text-pink-600">difficult challenge</strong>.
                             </p>
-                            <p className="text-slate-700 mb-4 text-lg leading-relaxed" dir="ltr">
-                                Her <span className="font-semibold text-emerald-600">friend</span> gave her <span className="font-semibold text-blue-600">helpful advice</span>: "<span className="font-semibold text-purple-600">Focus</span> on your goals, and be <span className="font-semibold text-amber-600">careful</span> not to waste time."
+                            <p className="mb-4">
+                                Her <strong className="text-pink-600">friend</strong> gave her <strong className="text-fuchsia-600">helpful advice</strong>:
+                                "<strong className="text-fuchsia-600">Focus</strong> on your goals, and be <strong className="text-fuchsia-600">careful</strong> not to waste time."
                             </p>
-                            <p className="text-slate-700 text-lg leading-relaxed" dir="ltr">
-                                She wanted to <span className="font-semibold text-pink-600">discover</span> a <span className="font-semibold text-emerald-600">new career</span>. It wasn't <span className="font-semibold text-emerald-600">easy</span>, but she was <span className="font-semibold text-purple-600">successful</span> because she never stopped trying to understand.
+                            <p>
+                                She wanted to <strong className="text-pink-600">discover</strong> a <strong className="text-pink-600">new career</strong>.
+                                It wasn't <strong className="text-pink-600">easy</strong>, but she was <strong className="text-fuchsia-600">successful</strong> because she never stopped trying to <strong className="text-pink-600">understand</strong>.
                             </p>
                         </div>
-                        <button onClick={() => speak("The Big Challenge. Maya wanted to improve her English. She knew she had to prepare for a difficult challenge. Her friend gave her helpful advice. Focus on your goals and be careful not to waste time. Maya tried to imagine her future. She wanted to discover a new career. It wasn't easy, but she was successful because she never stopped trying to understand.")} className="w-full px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all border-2 border-white/40">
-                            🔊 השמע את הסיפור
+                        <button onClick={() => speakText(storyText)}
+                            className="px-8 py-4 bg-fuchsia-500 text-white rounded-xl font-bold mx-auto flex items-center justify-center gap-2 hover:bg-fuchsia-600 shadow-md transition-colors mb-8">
+                            🔊 השמע קריאה
                         </button>
                     </div>
                 )}
+
             </div>
         </div>
     );
-};
-
-export default App;
+}
