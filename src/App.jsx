@@ -46,7 +46,76 @@ const wordsData = [
     { en: "Speak", he: "לדבר" }
 ];
 
-const storyText = "Maya wanted to improve her English. She knew she had to prepare for a difficult challenge. Her friend gave her helpful advice: Focus on your goals, and be careful not to waste time. Maya tried to imagine her future. She wanted to discover a new career. It wasn't easy, but she was successful because she never stopped trying to understand.";
+// ── Builder Data (9th Grade - prefix/suffix patterns) ──
+const builderData = [
+    { type: "prefix", prefix: "Un", root: "Happy", rootMeaning: "שמח", word: "Unhappy", options: ["עצוב / לא שמח", "מאוד שמח", "מבולבל"], correct: 0, explanation: "הקידומת Un הופכת את המילה לשלילה. Un+Happy = לא שמח." },
+    { type: "prefix", prefix: "Un", root: "Employed", rootMeaning: "מועסק", word: "Unemployed", options: ["עובד במשרה מלאה", "מובטל", "פנסיונר"], correct: 1, explanation: "Un+Employed = לא מועסק = מובטל." },
+    { type: "prefix", prefix: "Mis", root: "Understand", rootMeaning: "להבין", word: "Misunderstand", options: ["להבין היטב", "להסביר", "להבין לא נכון"], correct: 2, explanation: "הקידומת Mis פירושה 'בצורה שגויה'. Mis+Understand = להבין לא נכון." },
+    { type: "prefix", prefix: "Un", root: "Believable", rootMeaning: "ניתן להאמין", word: "Unbelievable", options: ["מדהים / לא ייאמן", "אמין מאוד", "ברור"], correct: 0, explanation: "Un+Believable = לא ניתן להאמין = מדהים, מפתיע." },
+    { type: "compound", part1: "Home", part1Meaning: "בית", part2: "Work", part2Meaning: "עבודה", word: "Homework", options: ["בית ספר", "שיעורי בית", "ניקיון הבית"], correct: 1, explanation: "עבודה שעושים בבית = שיעורי בית." },
+    { type: "compound", part1: "News", part1Meaning: "חדשות", part2: "Paper", part2Meaning: "נייר/עיתון", word: "Newspaper", options: ["מגזין", "ספר", "עיתון"], correct: 2, explanation: "נייר עם חדשות = עיתון." },
+    { type: "compound", part1: "After", part1Meaning: "אחרי", part2: "Noon", part2Meaning: "צהריים", word: "Afternoon", options: ["לפנות ערב", "אחר הצהריים", "חצות"], correct: 1, explanation: "אחרי הצהריים = אחר הצהריים." },
+    { type: "suffix", root: "Success", rootMeaning: "הצלחה", suffix: "ful", word: "Successful", options: ["כושל", "מוצלח", "מנסה"], correct: 1, explanation: "הסיומת ful פירושה 'מלא ב'. Success+ful = מלא הצלחה = מוצלח." },
+    { type: "suffix", root: "Use", rootMeaning: "שימוש", suffix: "ful", word: "Useful", options: ["חסר ערך", "שימושי", "משומש"], correct: 1, explanation: "Use+ful = מלא שימוש = שימושי." },
+    { type: "suffix", root: "Help", rootMeaning: "עזרה", suffix: "ful", word: "Helpful", options: ["עוזר / מועיל", "מפריע", "חסר תועלת"], correct: 0, explanation: "Help+ful = מלא עזרה = מועיל." },
+];
+
+// ── Analogies Data (9th Grade vocabulary) ──
+const analogiesData = [
+    { word1: "Happy", word2: "Sad", relation: "הפכים (Opposites)", word3: "Fast", options: ["Slow", "Run", "Early", "Dream"], correct: "Slow" },
+    { word1: "Difficult", word2: "Easy", relation: "הפכים (Opposites)", word3: "Expensive", options: ["Cheap", "Buy", "Rent", "Useful"], correct: "Cheap" },
+    { word1: "Morning", word2: "Night", relation: "הפכים (Opposites)", word3: "Before", options: ["After", "Between", "Behind", "Late"], correct: "After" },
+    { word1: "Improve", word2: "Get Better", relation: "מילה ומשמעותה", word3: "Discover", options: ["To Find", "To Forget", "To Lose", "To Wait"], correct: "To Find" },
+    { word1: "New", word2: "Old", relation: "הפכים (Opposites)", word3: "Early", options: ["Late", "Morning", "Night", "After"], correct: "Late" },
+    { word1: "Career", word2: "Work", relation: "קשר של תחום", word3: "Advice", options: ["Suggestion", "Problem", "Mistake", "Solution"], correct: "Suggestion" },
+    { word1: "To Forget", word2: "To Remember", relation: "הפכים (Opposites)", word3: "To Start", options: ["To Finish", "To Learn", "To Wait", "To Help"], correct: "To Finish" },
+    { word1: "Dream", word2: "Imagine", relation: "מילים קרובות", word3: "Mistake", options: ["Error", "Advice", "Promise", "Voice"], correct: "Error" },
+];
+
+// ── Sentence Completion Data (9th Grade) ──
+const completionData = [
+    { sentence: "I need to _______ for my English test tomorrow.", options: ["Prepare", "Forget", "Ignore", "Swim"], correct: "Prepare" },
+    { sentence: "She gave me some great _______  about how to study.", options: ["Advice", "Mistake", "Career", "Voice"], correct: "Advice" },
+    { sentence: "It is _______ to believe, but she finished the whole book in one day.", options: ["Unbelievable", "Terrible", "Strange", "Heavy"], correct: "Unbelievable" },
+    { sentence: "I always try to _______ my English skills.", options: ["Improve", "Forget", "Catch", "Borrow"], correct: "Improve" },
+    { sentence: "She made a _______ in the test and had to correct it.", options: ["Mistake", "Dream", "Promise", "Secret"], correct: "Mistake" },
+    { sentence: "He couldn't _______ on his homework because it was too noisy.", options: ["Focus", "Travel", "Swim", "Sell"], correct: "Focus" },
+    { sentence: "The weather in the morning is _______ than in the afternoon.", options: ["Different", "Quiet", "Heavy", "Strange"], correct: "Different" },
+    { sentence: "She kept her _______ and nobody knew.", options: ["Secret", "Voice", "Family", "Career"], correct: "Secret" },
+    { sentence: "I forgot to do my _______ and the teacher was not happy.", options: ["Homework", "Dream", "Advice", "Story"], correct: "Homework" },
+    { sentence: "He is very _______  — he always helps everyone around him.", options: ["Helpful", "Terrible", "Heavy", "Unemployed"], correct: "Helpful" },
+];
+
+// ── Stories Data ──
+const storiesData = [
+    {
+        title: "The Big Challenge 🧗‍♀️",
+        content: [
+            "[[Maya|מאיה|מאיה|learned]] wanted to [[improve|לשפר|אימפרוב|learned]] her English. She knew she had to [[prepare|להתכונן|פריפייר|learned]] for a [[difficult|קשה|דיפיקאלט|learned]] [[challenge|אתגר|צ'לנג|learned]].",
+            "Her [[friend|חבר/ה|פרנד|learned]] gave her [[helpful|מועיל|הלפּפול|learned]] [[advice|עצה|אדווייס|learned]]: '[[Focus|להתרכז|פוקוס|learned]] on your goals, and be [[careful|זהיר|קרפול|learned]]!'",
+            "Maya decided to [[discover|לגלות|דיסקאבר|learned]] a new [[career|קריירה|קריר|learned]]. It wasn't [[easy|קל|איזי|learned]], but she was [[successful|מוצלח|סקסספול|learned]]!"
+        ],
+        audio: "Maya wanted to improve her English. She knew she had to prepare for a difficult challenge. Her friend gave her helpful advice: Focus on your goals, and be careful. Maya decided to discover a new career. It wasn't easy, but she was successful!"
+    },
+    {
+        title: "A Strange Day ☁️",
+        content: [
+            "It was a [[strange|מוזר|סטריינג|learned]] [[morning|בוקר|מורנינג|learned]]. The [[weather|מזג אוויר|ווד'ר|learned]] was [[terrible|נורא|טריבל|learned]].",
+            "[[Suddenly|לפתע|סאדנלי|learned]], she got a [[surprise|הפתעה|סרפרייז|learned]] from her [[family|משפחה|פמילי|learned]]. They decided to [[travel|לטייל|טראוול|learned]] [[together|ביחד|טוגד'ר|learned]].",
+            "She [[promised|הבטיחה|פרומיסד|learned]] herself to [[remember|לזכור|ריממבר|learned]] this [[wonderful|נפלא|וונדרפול|learned]] [[dream|חלום|דרים|learned]] forever."
+        ],
+        audio: "It was a strange morning. The weather was terrible. Suddenly, she got a surprise from her family. They decided to travel together. She promised herself to remember this wonderful dream forever."
+    },
+    {
+        title: "The Coffee Shop ☕",
+        content: [
+            "After a [[heavy|כבד|הווי|learned]] [[work|עבודה|וורק|learned]] day, Maya went to a [[quiet|שקט|קווייט|learned]] [[shop|חנות|שופ|learned]] near the [[park|פארק|פארק|learned]].",
+            "She tried to [[focus|להתרכז|פוקוס|learned]] on a [[book|ספר|בוק|learned]]. She [[always|תמיד|אולווייז|learned]] liked to [[read|לקרוא|ריד|learned]] and [[imagine|לדמיין|אימג'ין|learned]] other [[life|חיים|לייף|learned]].",
+            "A [[voice|קול|וויס|learned]] said: 'Can I [[borrow|לשאול/להלוות|בורו|learned]] a pen?' She smiled — even [[small|קטן|סמול|learned]] moments can be [[amazing|מדהים|אמייזינג|learned]]."
+        ],
+        audio: "After a heavy work day, Maya went to a quiet shop near the park. She tried to focus on a book. She always liked to read and imagine other lives. A voice said: Can I borrow a pen? She smiled — even small moments can be amazing."
+    }
+];
 
 // ── Helpers ───────────────────────────────────
 const playSound = type => {
@@ -75,13 +144,33 @@ const speakText = (text, rate = 0.85) => {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'en-US'; u.rate = rate; u.pitch = 1.0;
     const voices = window.speechSynthesis.getVoices();
-    const pick = voices.find(v => ["Google US English","Microsoft Samantha","Samantha","Microsoft Zira"].some(p => v.name.includes(p)));
+    const pick = voices.find(v =>
+        v.lang.startsWith('en') &&
+        (v.name.includes("Premium") || v.name.includes("Enhanced") || v.name.includes("Online") || v.name.includes("Natural")) &&
+        !v.name.toLowerCase().includes("male")
+    ) || voices.find(v => ["Google US English","Microsoft Samantha","Samantha","Microsoft Zira"].some(p => v.name.includes(p)));
     if (pick) u.voice = pick;
     window.speechSynthesis.speak(u);
 };
 
+const getNextRandom = (curr, length) => {
+    if (length <= 1) return 0;
+    let next = curr;
+    while (next === curr) next = Math.floor(Math.random() * length);
+    return next;
+};
+
 // ── App ───────────────────────────────────────
 export default function App() {
+    useEffect(() => {
+        if (!customElements.get('dotlottie-wc')) {
+            const script = document.createElement('script');
+            script.src = "https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.3/dist/dotlottie-wc.js";
+            script.type = "module";
+            document.head.appendChild(script);
+        }
+    }, []);
+
     const [view, setView] = useState('learn');
     const [masteredIndexes, setMasteredIndexes] = useState(() => {
         try { return JSON.parse(localStorage.getItem('alma_mastered_words') || '[]'); }
@@ -94,8 +183,22 @@ export default function App() {
     const [step, setStep] = useState(1);
     const [isListening, setIsListening] = useState(false);
     const [feedback, setFeedback] = useState(null);
+    const [activeAnim, setActiveAnim] = useState(null);
+
+    // Game states
+    const [builderIndex, setBuilderIndex] = useState(0);
+    const [analogyIndex, setAnalogyIndex] = useState(0);
+    const [compIndex, setCompIndex] = useState(0);
+    const [storyIndex, setStoryIndex] = useState(0);
+    const [quizSet, setQuizSet] = useState([]);
+    const [quizIndex, setQuizIndex] = useState(0);
+    const [quizScore, setQuizScore] = useState(0);
+    const [matchCards, setMatchCards] = useState([]);
+    const [flippedCards, setFlippedCards] = useState([]);
+    const [matchedPairs, setMatchedPairs] = useState([]);
+
     const isProcessingRef = useRef(false);
-    const currentWord = wordsData[activeWordIndex];
+    const currentWord = wordsData[activeWordIndex] || wordsData[0];
 
     const options = useMemo(() => {
         const others = wordsData.filter(w => w.en !== currentWord.en).sort(() => Math.random() - 0.5).slice(0, 3);
@@ -106,6 +209,11 @@ export default function App() {
         localStorage.setItem('alma_mastered_words', JSON.stringify(masteredIndexes));
         localStorage.setItem('alma_last_active_index', activeWordIndex.toString());
     }, [masteredIndexes, activeWordIndex]);
+
+    const triggerAnimation = type => {
+        setActiveAnim(type);
+        setTimeout(() => setActiveAnim(null), 1800);
+    };
 
     const handleSpeech = () => {
         if (isListening) return;
@@ -130,6 +238,7 @@ export default function App() {
                 isProcessingRef.current = true;
                 setFeedback({ type: 'success', message: `מעולה! זיהיתי "${transcript}"` });
                 playSound('success');
+                triggerAnimation('success-check');
                 setMasteredIndexes(prev => {
                     const next = prev.includes(activeWordIndex) ? prev : [...prev, activeWordIndex];
                     setTimeout(() => {
@@ -159,10 +268,101 @@ export default function App() {
         }
     };
 
-    const NavBtn = ({ icon, label, id }) => (
-        <button onClick={() => setView(id)}
+    const startMatchGame = () => {
+        const selected = [...wordsData].sort(() => 0.5 - Math.random()).slice(0, 6);
+        let cards = [];
+        selected.forEach((w, i) => {
+            cards.push({ id: `en-${i}`, text: w.en, type: 'en', pairId: i });
+            cards.push({ id: `he-${i}`, text: w.he, type: 'he', pairId: i });
+        });
+        setMatchCards(cards.sort(() => 0.5 - Math.random()));
+        setFlippedCards([]); setMatchedPairs([]);
+        setView('match');
+    };
+
+    const handleCardClick = card => {
+        if (flippedCards.length === 2 || flippedCards.some(c => c.id === card.id) || matchedPairs.includes(card.pairId)) return;
+        const newFlipped = [...flippedCards, card];
+        setFlippedCards(newFlipped);
+        if (newFlipped.length === 2) {
+            if (newFlipped[0].pairId === newFlipped[1].pairId) {
+                playSound('success');
+                setTimeout(() => {
+                    const newMatched = [...matchedPairs, newFlipped[0].pairId];
+                    setMatchedPairs(newMatched);
+                    setFlippedCards([]);
+                    if (newMatched.length === 6) triggerAnimation('confetti');
+                }, 500);
+            } else {
+                playSound('error');
+                setTimeout(() => setFlippedCards([]), 1000);
+            }
+        }
+    };
+
+    const startQuiz = () => {
+        const vocabQ = [...wordsData].sort(() => 0.5 - Math.random()).slice(0, 4).map(w => {
+            const others = wordsData.filter(x => x.he !== w.he).sort(() => 0.5 - Math.random()).slice(0, 3);
+            const opts = [...others.map(x => x.he), w.he].sort(() => 0.5 - Math.random());
+            return { type: 'vocab', question: w.en, correct: w.he, options: opts };
+        });
+        const analogyQ = [...analogiesData].sort(() => 0.5 - Math.random()).slice(0, 3).map(a => ({
+            type: 'analogy', data: a, correct: a.correct, options: a.options
+        }));
+        const compQ = [...completionData].sort(() => 0.5 - Math.random()).slice(0, 3).map(c => ({
+            type: 'completion', data: c, correct: c.correct, options: c.options
+        }));
+        setQuizSet([...vocabQ, ...analogyQ, ...compQ].sort(() => 0.5 - Math.random()));
+        setQuizIndex(0); setQuizScore(0);
+        setView('quiz'); setFeedback(null);
+    };
+
+    const handleQuizAnswer = selected => {
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
+        if (selected === quizSet[quizIndex].correct) {
+            setQuizScore(prev => prev + 1);
+            playSound('success');
+            triggerAnimation('success-check');
+        } else {
+            playSound('error');
+        }
+        setTimeout(() => {
+            if (quizIndex < quizSet.length - 1) setQuizIndex(prev => prev + 1);
+            else setView('quiz-result');
+            isProcessingRef.current = false;
+        }, 1200);
+    };
+
+    const renderStoryText = text => {
+        const parts = text.split(/(\[\[.*?\]\])/g);
+        const typeStyles = {
+            learned: "text-fuchsia-600 border-fuchsia-300",
+            new: "text-pink-600 border-pink-300"
+        };
+        return parts.map((part, i) => {
+            if (part.startsWith('[[') && part.endsWith(']]')) {
+                const [word, he, pron, type] = part.slice(2, -2).split('|');
+                const styleClass = typeStyles[type] || typeStyles.learned;
+                return (
+                    <span key={i} className={`relative group font-bold cursor-help inline-block border-b-2 transition-colors hover:bg-slate-50 rounded-sm px-1 ${styleClass}`}>
+                        {word}
+                        <span className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 w-max px-3 py-1.5 bg-slate-800 text-white rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-xl flex flex-col items-center" dir="rtl">
+                            <span className="font-black text-sm">{he}</span>
+                            <span className="text-pink-300 text-xs mt-0.5">{pron}</span>
+                            <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></span>
+                        </span>
+                    </span>
+                );
+            }
+            return <span key={i}>{part}</span>;
+        });
+    };
+
+    const NavBtn = ({ icon, label, id, action }) => (
+        <button onClick={() => { if (action) action(); else setView(id); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all shadow-sm border border-transparent
-                ${view === id ? 'bg-pink-500 text-white shadow-md scale-105 border-pink-600' : 'bg-white text-slate-700 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200'}`}>
+                ${view === id || (view.startsWith('quiz') && id === 'quiz') ? 'bg-pink-500 text-white shadow-md scale-105 border-pink-600' : 'bg-white text-slate-700 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200'}`}>
             <span>{icon}</span><span>{label}</span>
         </button>
     );
@@ -170,6 +370,18 @@ export default function App() {
     return (
         <div className="min-h-screen bg-rose-50 text-slate-800 p-4 md:p-8 font-sans" dir="rtl">
             <div className="max-w-5xl mx-auto">
+
+                {/* Lottie Overlays */}
+                {activeAnim === 'success-check' && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none bg-white/30 backdrop-blur-sm">
+                        <dotlottie-wc src="https://lottie.host/21a44f7a-fb9f-4e6e-8ed5-647aa8455b43/jGVlPat0sl.lottie" style={{width:'300px',height:'300px'}} autoplay></dotlottie-wc>
+                    </div>
+                )}
+                {activeAnim === 'confetti' && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none bg-white/30 backdrop-blur-sm">
+                        <dotlottie-wc src="https://lottie.host/4c47d84e-6829-4be0-a686-d7a0817a318d/HgXH5VSCYu.lottie" style={{width:'100vw',height:'100vh'}} autoplay></dotlottie-wc>
+                    </div>
+                )}
 
                 {/* Header */}
                 <header className="text-center mb-8">
@@ -179,9 +391,14 @@ export default function App() {
                         <div className="w-16" />
                     </div>
                     <div className="flex flex-wrap justify-center gap-2">
-                        <NavBtn icon="🎓" label="למידה"   id="learn" />
-                        <NavBtn icon="📖" label="ספריה"   id="library" />
-                        <NavBtn icon="📚" label="סיפור"   id="story" />
+                        <NavBtn icon="🎓" label="למידה"    id="learn" />
+                        <NavBtn icon="📖" label="ספריה"    id="library" />
+                        <NavBtn icon="🧩" label="הרכבה"    id="builder" action={() => { setView('builder'); setBuilderIndex(Math.floor(Math.random() * builderData.length)); }} />
+                        <NavBtn icon="🔗" label="אנלוגיות" id="analogies" action={() => { setView('analogies'); setAnalogyIndex(Math.floor(Math.random() * analogiesData.length)); }} />
+                        <NavBtn icon="✍️" label="משפטים"   id="completion" action={() => { setView('completion'); setCompIndex(Math.floor(Math.random() * completionData.length)); }} />
+                        <NavBtn icon="📚" label="סיפור"    id="story" action={() => { setView('story'); setStoryIndex(Math.floor(Math.random() * storiesData.length)); }} />
+                        <NavBtn icon="🃏" label="זוגות"    id="match" action={startMatchGame} />
+                        <NavBtn icon="🏆" label="בוחן"     id="quiz" action={startQuiz} />
                     </div>
                 </header>
 
@@ -245,7 +462,7 @@ export default function App() {
                 {/* Library */}
                 {view === 'library' && (
                     <div className="bg-white rounded-[3rem] p-8 shadow-xl border-t-8 border-orange-300 transition-all">
-                        <h2 className="text-3xl font-black text-orange-800 mb-6 text-center">הספריה הגדולה ({wordsData.length} מילים)</h2>
+                        <h2 className="text-3xl font-black text-rose-500 mb-6 text-center">הספריה הגדולה ({wordsData.length} מילים) 📚</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[60vh] overflow-y-auto pr-2">
                             {wordsData.map((w, idx) => (
                                 <div key={idx} onClick={() => { setActiveWordIndex(idx); setStep(1); setView('learn'); }}
@@ -260,28 +477,183 @@ export default function App() {
                     </div>
                 )}
 
+                {/* Builder */}
+                {view === 'builder' && (
+                    <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border-t-8 border-rose-400 text-center transition-all">
+                        <h2 className="text-3xl font-black text-rose-600 mb-4">מילים מורכבות 🧩</h2>
+                        <p className="text-slate-600 mb-8 font-bold text-lg">{builderData[builderIndex].explanation}</p>
+                        <div className="flex justify-center items-center text-2xl md:text-5xl font-black gap-2 mb-8 bg-rose-50 p-6 rounded-3xl border-2 border-rose-100 flex-wrap" dir="ltr">
+                            <span className="text-rose-500">
+                                {builderData[builderIndex].type === 'prefix' ? builderData[builderIndex].prefix :
+                                 builderData[builderIndex].type === 'suffix' ? builderData[builderIndex].root :
+                                 builderData[builderIndex].part1}
+                            </span>
+                            <span className="text-pink-300">+</span>
+                            <span className="text-slate-700">
+                                {builderData[builderIndex].type === 'prefix' ? builderData[builderIndex].root :
+                                 builderData[builderIndex].type === 'suffix' ? builderData[builderIndex].suffix :
+                                 builderData[builderIndex].part2}
+                            </span>
+                            <span className="text-pink-300 mx-2">=</span>
+                            <span className="text-rose-700 underline decoration-rose-300">{builderData[builderIndex].word}</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {builderData[builderIndex].options.map((opt, i) => (
+                                <button key={i} onClick={() => {
+                                    if (i === builderData[builderIndex].correct) {
+                                        playSound('success'); triggerAnimation('success-check');
+                                        setTimeout(() => setBuilderIndex(prev => getNextRandom(prev, builderData.length)), 1500);
+                                    } else playSound('error');
+                                }} className="p-6 bg-rose-50 border-2 border-rose-200 rounded-2xl font-bold text-xl text-rose-900 hover:bg-rose-500 hover:text-white transition-all shadow-sm">{opt}</button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Analogies */}
+                {view === 'analogies' && (
+                    <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border-t-8 border-fuchsia-400 text-center transition-all">
+                        <h2 className="text-3xl font-black text-fuchsia-800 mb-8">אנלוגיות - מה הקשר? 🔗</h2>
+                        <div className="bg-fuchsia-50 px-6 py-2 rounded-full inline-block mb-8 font-bold text-fuchsia-800 text-lg">{analogiesData[analogyIndex].relation}</div>
+                        <div className="flex justify-center items-center gap-4 text-3xl md:text-4xl font-black bg-pink-50 p-6 rounded-2xl mb-4 border-2 border-pink-100 w-full max-w-lg mx-auto flex-wrap" dir="ltr">
+                            <span className="text-slate-700">{analogiesData[analogyIndex].word1}</span>
+                            <span className="text-fuchsia-400">↔️</span>
+                            <span className="text-slate-700">{analogiesData[analogyIndex].word2}</span>
+                        </div>
+                        <div className="text-xl text-slate-400 font-bold mb-4">בדיוק כמו ש...</div>
+                        <div className="flex justify-center items-center gap-4 text-3xl md:text-4xl font-black bg-fuchsia-100 p-6 rounded-2xl mb-10 border-4 border-fuchsia-200 w-full max-w-lg mx-auto flex-wrap" dir="ltr">
+                            <span className="text-fuchsia-900">{analogiesData[analogyIndex].word3}</span>
+                            <span className="text-fuchsia-400">↔️</span>
+                            <span className="border-b-4 border-fuchsia-500 text-fuchsia-500 w-16 text-center">?</span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {analogiesData[analogyIndex].options.map((opt, i) => (
+                                <button key={i} onClick={() => {
+                                    if (opt === analogiesData[analogyIndex].correct) {
+                                        playSound('success'); triggerAnimation('success-check');
+                                        setTimeout(() => setAnalogyIndex(prev => getNextRandom(prev, analogiesData.length)), 1500);
+                                    } else playSound('error');
+                                }} className="p-5 bg-white border-2 border-fuchsia-200 rounded-2xl font-black text-xl text-fuchsia-800 hover:bg-fuchsia-500 hover:text-white transition-all shadow-sm" dir="ltr">{opt}</button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Completion */}
+                {view === 'completion' && (
+                    <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border-t-8 border-pink-500 text-center transition-all">
+                        <h2 className="text-3xl font-black text-pink-800 mb-8">השלמת משפטים ✍️</h2>
+                        <div className="bg-pink-50 p-8 rounded-2xl border-2 border-pink-200 mb-10 text-2xl font-bold text-slate-800 leading-loose shadow-inner" dir="ltr">
+                            {completionData[compIndex].sentence.split('_______')[0]}
+                            <span className="inline-block border-b-4 border-pink-500 text-pink-600 px-4">?</span>
+                            {completionData[compIndex].sentence.split('_______')[1]}
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            {completionData[compIndex].options.map((opt, i) => (
+                                <button key={i} onClick={() => {
+                                    if (opt === completionData[compIndex].correct) {
+                                        playSound('success'); triggerAnimation('success-check');
+                                        setTimeout(() => setCompIndex(prev => getNextRandom(prev, completionData.length)), 1500);
+                                    } else playSound('error');
+                                }} className="p-6 bg-white border-2 border-pink-200 rounded-2xl font-black text-xl text-pink-800 hover:bg-pink-500 hover:text-white transition-all shadow-sm" dir="ltr">{opt}</button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Story */}
                 {view === 'story' && (
-                    <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border-t-8 border-fuchsia-400 transition-all">
-                        <h2 className="text-4xl font-black text-fuchsia-900 mb-6 text-center">The Big Challenge 🧗‍♀️</h2>
-                        <div className="text-xl leading-loose text-slate-800 bg-fuchsia-50 p-6 md:p-8 rounded-2xl border-2 border-fuchsia-200 shadow-inner mb-8" dir="ltr">
-                            <p className="mb-4">
-                                Maya wanted to <strong className="text-fuchsia-600">improve</strong> her English.
-                                She knew she had to <strong className="text-fuchsia-600">prepare</strong> for a <strong className="text-pink-600">difficult challenge</strong>.
-                            </p>
-                            <p className="mb-4">
-                                Her <strong className="text-pink-600">friend</strong> gave her <strong className="text-fuchsia-600">helpful advice</strong>:
-                                "<strong className="text-fuchsia-600">Focus</strong> on your goals, and be <strong className="text-fuchsia-600">careful</strong> not to waste time."
-                            </p>
-                            <p>
-                                She wanted to <strong className="text-pink-600">discover</strong> a <strong className="text-pink-600">new career</strong>.
-                                It wasn't <strong className="text-pink-600">easy</strong>, but she was <strong className="text-fuchsia-600">successful</strong> because she never stopped trying to <strong className="text-pink-600">understand</strong>.
-                            </p>
+                    <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border-t-8 border-rose-400 relative transition-all">
+                        <h2 className="text-4xl font-black text-rose-600 mb-6 text-center">{storiesData[storyIndex].title}</h2>
+                        <div className="flex flex-wrap justify-center gap-2 mb-6 text-sm font-bold">
+                            <span className="bg-fuchsia-100 text-fuchsia-800 px-3 py-1 rounded-full">מילים שלמדנו</span>
+                            <span className="bg-pink-100 text-pink-800 px-3 py-1 rounded-full">חדשות — עברו עם העכבר</span>
                         </div>
-                        <button onClick={() => speakText(storyText)}
-                            className="px-8 py-4 bg-fuchsia-500 text-white rounded-xl font-bold mx-auto flex items-center justify-center gap-2 hover:bg-fuchsia-600 shadow-md transition-colors mb-8">
-                            🔊 השמע קריאה
-                        </button>
+                        <div className="text-xl md:text-2xl leading-loose text-slate-800 bg-rose-50 p-6 md:p-8 rounded-2xl border-2 border-rose-200 shadow-inner" dir="ltr">
+                            {storiesData[storyIndex].content.map((paragraph, idx) => (
+                                <p key={idx} className="mb-4">{renderStoryText(paragraph)}</p>
+                            ))}
+                        </div>
+                        <div className="flex justify-center gap-4 mt-8 flex-wrap">
+                            <button onClick={() => speakText(storiesData[storyIndex].audio)} className="px-8 py-4 bg-rose-400 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-rose-500 shadow-md transition-colors">
+                                🔊 השמע סיפור
+                            </button>
+                            <button onClick={() => setStoryIndex(prev => getNextRandom(prev, storiesData.length))} className="px-8 py-4 bg-white border-2 border-rose-400 text-rose-600 rounded-xl font-bold flex items-center gap-2 hover:bg-rose-50 shadow-sm transition-colors">
+                                🎲 סיפור אחר
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Match */}
+                {view === 'match' && (
+                    <div className="bg-white rounded-[3rem] p-8 shadow-xl border-t-8 border-purple-400 text-center transition-all min-h-[500px]">
+                        <h2 className="text-3xl font-black text-purple-700 mb-2">זוגות - מצאי את ההתאמה 🃏</h2>
+                        <p className="text-slate-500 font-bold mb-8">לחצי על קלף אנגלית והפירוש שלו בעברית</p>
+                        {matchedPairs.length === 6 ? (
+                            <div className="py-20">
+                                <h3 className="text-5xl font-black text-fuchsia-500 mb-6">ניצחון! 🎉</h3>
+                                <button onClick={startMatchGame} className="px-8 py-4 bg-purple-500 text-white rounded-xl font-bold hover:bg-purple-600">שחקי שוב</button>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
+                                {matchCards.map((card, i) => {
+                                    const isFlipped = flippedCards.some(c => c.id === card.id);
+                                    const isMatched = matchedPairs.includes(card.pairId);
+                                    return (
+                                        <button key={i} onClick={() => handleCardClick(card)} disabled={isFlipped || isMatched}
+                                            className={`h-24 md:h-32 rounded-2xl font-black text-lg md:text-xl transition-all shadow-md flex items-center justify-center border-4 ${isMatched ? 'opacity-0 scale-95 cursor-default bg-fuchsia-100 border-fuchsia-300' : isFlipped ? 'bg-pink-100 border-pink-400 text-pink-900 scale-105' : 'bg-purple-50 border-purple-200 text-purple-900 hover:bg-purple-100'}`}
+                                            dir={card.type === 'en' ? 'ltr' : 'rtl'}>
+                                            {card.text}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Quiz */}
+                {view === 'quiz' && quizSet.length > 0 && (
+                    <div className="bg-white rounded-[3rem] p-8 shadow-xl border-t-8 border-fuchsia-500 text-center transition-all">
+                        <h2 className="text-xl font-bold text-fuchsia-700 mb-8">שאלה {quizIndex + 1} מתוך {quizSet.length}</h2>
+                        {quizSet[quizIndex].type === 'vocab' && (
+                            <h3 className="text-6xl font-black text-slate-900 mb-10" dir="ltr">{quizSet[quizIndex].question}</h3>
+                        )}
+                        {quizSet[quizIndex].type === 'analogy' && (
+                            <div className="mb-10 flex flex-col items-center gap-4">
+                                <div className="text-3xl font-black bg-slate-50 p-4 rounded-xl border-2 border-slate-200 w-full max-w-sm flex justify-center gap-4" dir="ltr">
+                                    <span>{quizSet[quizIndex].data.word1}</span> ↔️ <span>{quizSet[quizIndex].data.word2}</span>
+                                </div>
+                                <div className="text-3xl font-black text-fuchsia-700 bg-fuchsia-50 p-4 rounded-xl border-2 border-fuchsia-200 w-full max-w-sm flex justify-center gap-4" dir="ltr">
+                                    <span>{quizSet[quizIndex].data.word3}</span> ↔️ <span className="border-b-4 border-fuchsia-400 min-w-[50px]">?</span>
+                                </div>
+                            </div>
+                        )}
+                        {quizSet[quizIndex].type === 'completion' && (
+                            <div className="mb-10 text-2xl font-bold bg-fuchsia-50 p-6 rounded-2xl border-2 border-fuchsia-200" dir="ltr">
+                                {quizSet[quizIndex].data.sentence.split('_______')[0]}
+                                <span className="border-b-4 border-fuchsia-500 px-4">?</span>
+                                {quizSet[quizIndex].data.sentence.split('_______')[1]}
+                            </div>
+                        )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {quizSet[quizIndex].options.map((opt, i) => (
+                                <button key={i} onClick={() => handleQuizAnswer(opt)}
+                                    className="p-5 bg-pink-50 border-2 border-pink-100 rounded-2xl font-bold text-xl text-pink-900 hover:bg-pink-500 hover:text-white transition-all shadow-sm">
+                                    {opt}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {view === 'quiz-result' && (
+                    <div className="bg-white rounded-[3rem] p-12 shadow-xl border-t-8 border-fuchsia-500 text-center transition-all min-h-[400px] flex flex-col justify-center">
+                        <h2 className="text-4xl font-black text-purple-900 mb-4">כל הכבוד! 🏆</h2>
+                        <p className="text-2xl mb-4">הציון שלך:</p>
+                        <div className="text-8xl font-black text-fuchsia-600 mb-8">{Math.round((quizScore / quizSet.length) * 100)}%</div>
+                        <button onClick={() => setView('learn')} className="px-8 py-4 bg-fuchsia-500 text-white rounded-2xl font-bold text-xl hover:bg-fuchsia-600 transition-colors mx-auto">המשך למידה</button>
                     </div>
                 )}
 
