@@ -129,8 +129,31 @@ const App = () => {
 
         const rec = new Recognition();
         rec.lang = 'en-US';
+        rec.continuous = false;
+        rec.interimResults = false;
+        rec.maxAlternatives = 1;
+        isProcessingRef.current = false;
+
         rec.onstart = () => setIsListening(true);
-        rec.onend = () => setIsListening(false);
+
+        rec.onend = () => {
+            setIsListening(false);
+            isProcessingRef.current = false;
+        };
+
+        rec.onerror = (e) => {
+            setIsListening(false);
+            isProcessingRef.current = false;
+            if (e.error === 'no-speech') {
+                setFeedback({ type: 'error', message: 'לא שמעתי כלום, נסי שוב 🎤' });
+            } else if (e.error === 'not-allowed') {
+                setFeedback({ type: 'error', message: 'נא לאשר גישה למיקרופון בדפדפן.' });
+            } else {
+                setFeedback({ type: 'error', message: 'שגיאת מיקרופון, נסי שוב.' });
+            }
+            setTimeout(() => setFeedback(null), 2500);
+        };
+
         rec.onresult = (e) => {
             if (isProcessingRef.current) return;
             const transcript = e.results[0][0].transcript.toLowerCase();
@@ -156,7 +179,14 @@ const App = () => {
                 setFeedback({ type: 'error', message: `שמעתי "${transcript}", נסי שוב.` });
             }
         };
-        rec.start();
+
+        try {
+            rec.start();
+        } catch (e) {
+            setIsListening(false);
+            setFeedback({ type: 'error', message: 'לא ניתן להפעיל מיקרופון, נסי שוב.' });
+            setTimeout(() => setFeedback(null), 2500);
+        }
     };
 
     const checkTranslation = (he) => {
